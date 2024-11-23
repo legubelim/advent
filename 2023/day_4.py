@@ -104,6 +104,14 @@ print(part2(get_lines(test=False)))
 import unittest
 
 class Test(unittest.TestCase):
+    
+    def setUp(self):
+        global logs
+        logs = False
+
+    def tearDown(self):
+        global logs
+        logs = True
 
     def test_part_1_string(self):
         lines = get_lines(test=True)
