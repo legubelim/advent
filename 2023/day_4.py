@@ -8,6 +8,10 @@ Created on Sat Nov 23 13:01:47 2024
 
 import re
 
+def log(s):
+    print(s)
+    
+
 #%%
 
 test = False
@@ -40,22 +44,16 @@ prog_space = re.compile(space_pattern)
 
 score = 0
 for line in lines:
-    print(f"line: {line}")
+    log(f"line: {line}")
     m = prog_line.match(line)
-    card_id = int(m.group(1))
-    #print(m.group(2))
     winning_numbers = [int(nb) for nb in prog_space.split(m.group(2))]
-    #print(m.group(3))
-    #print([nb for nb in prog_space.split(m.group(3))])
     my_numbers = [int(nb) for nb in prog_space.split(m.group(3))]
-    #print(m.group(3))
-    #print(my_numbers)
     n = len([nb for nb in my_numbers if nb in winning_numbers])
-    print(f"nb winning nbs: {n} score: {2 ** (n-1) if n>0 else 0} ")
+    log(f"nb winning nbs: {n} score: {2 ** (n-1) if n>0 else 0} ")
     if n > 0: 
         score += 2 ** (n-1)
         
-print(score)
+log(score)
 
 #%%
 
@@ -63,25 +61,25 @@ print(score)
 
 cards = {}
 for line in lines:
-    print(f"line: {line}")
+    log(f"line: {line}")
     m = prog_line.match(line)
     card_id = int(m.group(1))
     nb_copies = cards.get(card_id, 0) + 1
     cards[card_id] = nb_copies
-    #print(m.group(2))
+    #log(m.group(2))
     winning_numbers = [int(nb) for nb in prog_space.split(m.group(2))]
-    #print(m.group(3))
-    #print([nb for nb in prog_space.split(m.group(3))])
+    #log(m.group(3))
+    #log([nb for nb in prog_space.split(m.group(3))])
     my_numbers = [int(nb) for nb in prog_space.split(m.group(3))]
-    #print(m.group(3))
-    #print(my_numbers)
+    #log(m.group(3))
+    #log(my_numbers)
     n = len([nb for nb in my_numbers if nb in winning_numbers])
-    print(f"nb winning nbs: {n}")
-    print(list(range(card_id + 1, card_id + 1 + n)))
+    log(f"nb winning nbs: {n}")
+    log(list(range(card_id + 1, card_id + 1 + n)))
     for cid in range(card_id + 1, card_id + 1 + n):
         if cid <= len(lines):
             cards[cid] = cards.get(cid, 0) + nb_copies
         
-print(cards)
-print(sum(cards.values()))
+log(cards)
+log(sum(cards.values()))
 
