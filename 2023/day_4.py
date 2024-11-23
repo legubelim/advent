@@ -3,7 +3,7 @@
 """
 Created on Sat Nov 23 13:01:47 2024
 
-@author: glg
+@author: legubelim
 """
 
 import re
@@ -19,7 +19,6 @@ def log(s):
     
 
 #%%
-
 
 
 def get_lines(test=False):
@@ -40,7 +39,6 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"""
             lines = [l.strip() for l in file.readlines()]
         
     return lines
-
 
 
 #%%
@@ -109,7 +107,6 @@ print(part2(get_lines(test=False)))
 
 ## unit testing
 
-
 class Test(unittest.TestCase):
     
     def setUp(self):
@@ -135,7 +132,6 @@ class Test(unittest.TestCase):
     def test_part_2_file(self):
         lines = get_lines(test=False)
         self.assertEqual(part2(lines), 10378710)
-        print(f"logs: {logs}")
         
 
 unittest.main()
