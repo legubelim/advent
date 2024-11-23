@@ -7,9 +7,11 @@ Created on Sat Nov 23 13:01:47 2024
 """
 
 import re
+logs = True
 
 def log(s):
-    print(s)
+    if logs:
+        print(s)
     
 
 #%%
@@ -67,29 +69,34 @@ print(score)
 
 ## part 2    
 
-cards = {}
-for line in lines:
-    log(f"line: {line}")
-    m = prog_line.match(line)
-    card_id = int(m.group(1))
-    nb_copies = cards.get(card_id, 0) + 1
-    cards[card_id] = nb_copies
-    #log(m.group(2))
-    winning_numbers = [int(nb) for nb in prog_space.split(m.group(2))]
-    #log(m.group(3))
-    #log([nb for nb in prog_space.split(m.group(3))])
-    my_numbers = [int(nb) for nb in prog_space.split(m.group(3))]
-    #log(m.group(3))
-    #log(my_numbers)
-    n = len([nb for nb in my_numbers if nb in winning_numbers])
-    log(f"nb winning nbs: {n}")
-    log(list(range(card_id + 1, card_id + 1 + n)))
-    for cid in range(card_id + 1, card_id + 1 + n):
-        if cid <= len(lines):
-            cards[cid] = cards.get(cid, 0) + nb_copies
+def part2(lines):
+    cards = {}
+    for line in lines:
+        log(f"line: {line}")
+        m = prog_line.match(line)
+        card_id = int(m.group(1))
+        nb_copies = cards.get(card_id, 0) + 1
+        cards[card_id] = nb_copies
+        #log(m.group(2))
+        winning_numbers = [int(nb) for nb in prog_space.split(m.group(2))]
+        #log(m.group(3))
+        #log([nb for nb in prog_space.split(m.group(3))])
+        my_numbers = [int(nb) for nb in prog_space.split(m.group(3))]
+        #log(m.group(3))
+        #log(my_numbers)
+        n = len([nb for nb in my_numbers if nb in winning_numbers])
+        log(f"nb winning nbs: {n}")
+        log(list(range(card_id + 1, card_id + 1 + n)))
+        for cid in range(card_id + 1, card_id + 1 + n):
+            if cid <= len(lines):
+                cards[cid] = cards.get(cid, 0) + nb_copies
+
+    log(cards)
+    return sum(cards.values())
         
-log(cards)
-log(sum(cards.values()))
+#%%
+
+print(part2(get_lines(test=False)))
 
 
 #%%
@@ -105,5 +112,14 @@ class Test(unittest.TestCase):
     def test_part_1_file(self):
         lines = get_lines(test=False)
         self.assertEqual(part1(lines), 19855)
+        
+    def test_part_2_string(self):
+        lines = get_lines(test=True)
+        self.assertEqual(part2(lines), 30)
+
+    def test_part_2_file(self):
+        lines = get_lines(test=False)
+        self.assertEqual(part2(lines), 10378710)
+        
 
 unittest.main()
