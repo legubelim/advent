@@ -6,7 +6,7 @@ Created on Sat Nov 23 19:14:50 2024
 @author: legubelim
 """
 
-from typing import Optional, List
+from typing import Optional
 import re
 from collections import namedtuple
 
@@ -94,10 +94,10 @@ def read_maps(lines):
     
     
     m = seeds_prog.match(lines[0])
-    #print(m.group(1))
+    
     seeds = [int(s) for s in sep_prog.split(m.group(1))]
     
-    #print(seeds)
+    logger.debug(seeds)
     
     maps = {"seed-to-soil": [],
             "soil-to-fertilizer": [],
@@ -111,20 +111,20 @@ def read_maps(lines):
     current_map = None
     
     for line in lines[1:]:
-        #print(f"line: {line}")
+        logger.debug(f"line: {line}")
         if line == "": continue
         new_map = False
         for map_name in maps:
             if line.find(map_name) != -1:
-                #print(map_name)
+                logger.debug(map_name)
                 current_map = maps[map_name]
                 new_map = True
                 break
-        #print(new_map)
+        logger.debug(new_map)
         if new_map: continue
         m = map_line_prog.match(line)
         map_line = MapLine(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-        #print(map_line)
+        logger.debug(map_line)
         current_map.append(map_line)
         
     return seeds, maps
@@ -133,14 +133,14 @@ def read_maps(lines):
 
 seeds, maps = read_maps(get_lines(test=False))
 
-print(seeds)
-print(maps)
+logger.info(seeds)
+logger.info(maps)
 
 #%%
 
 def apply_map_line(seed:int, map_line:MapLine) -> Optional[int]:
     if (seed >= map_line.source_range_start) and (seed <= map_line.source_range_start + map_line.range_length):
-        #print(map_line)
+        #logger.debug(map_line)
         return map_line.destination_range_start + seed - map_line.source_range_start
     else:
         return None
@@ -160,34 +160,33 @@ locations = []
 for seed in seeds:
     source = seed
     for map_name, cmap in maps.items():
-        #print(f"apply {map_name} to {source}")
+        logger.debug(f"apply {map_name} to {source}")
         source = apply_map(source, cmap)
-        #print(f"   --> {source}")
+        logger.debug(f"   --> {source}")
     locations.append(source)
     
-print(locations)
+logger.info(locations)
 print(min(locations))
    
 #%%
 
-## part 2
+## part 2 -- Failed attempt because of performances
 
 seeds, maps = read_maps(get_lines(test=True))
 
 locations = []
 for i in range(0, len(seeds), 2):
-    #print(i)
     seed_range_start, seed_range_end = seeds[i], seeds[i] + seeds[i+1] - 1
-    #print((seed_range_start, seed_range_end))
+    logger.debug((seed_range_start, seed_range_end))
     for seed in range(seed_range_start, seed_range_end+1):
         source = seed
         for map_name, cmap in maps.items():
-            #print(f"apply {map_name} to {source}")
+            logger.debug(f"apply {map_name} to {source}")
             source = apply_map(source, cmap)
-            #print(f"   --> {source}")
+            logger.debug(f"   --> {source}")
         locations.append(source)
         
-#print(locations)
+logger.info(locations)
 print(min(locations))
              
 #%%
@@ -242,29 +241,29 @@ c = interval(17, end=23)
 d = interval(5, end=7)
 e = interval(12, length=1)
 f = interval(6, end=13)
-print(f"a: {a}")
-print(f"b: {b}")
-print(f"c: {c}")
-print(f"d: {d}")
-print(f"e: {e}")
-print(f"f: {f}")
+logger.debug(f"a: {a}")
+logger.debug(f"b: {b}")
+logger.debug(f"c: {c}")
+logger.debug(f"d: {d}")
+logger.debug(f"e: {e}")
+logger.debug(f"f: {f}")
 
-print(f"a+b: {invs2str(a+b)}")
-print(f"b+c: {invs2str(b+c)}")
-print(f"a-d: {invs2str(a-d)}")
+logger.debug(f"a+b: {invs2str(a+b)}")
+logger.debug(f"b+c: {invs2str(b+c)}")
+logger.debug(f"a-d: {invs2str(a-d)}")
 
-print(f"a-f: {invs2str(a-f)}")
-print(f"a&f: {a&f}")
+logger.debug(f"a-f: {invs2str(a-f)}")
+logger.debug(f"a&f: {a&f}")
 
     
 #%%
 
 #seed_ranges = [(seeds[i], seeds[i] + seeds[i+1] - 1) for i in range(0, len(seeds), 2)]
-#print(seed_ranges)
+#logger.debug(seed_ranges)
 seeds, maps = read_maps(get_lines(test=False))
 
 seed_ranges = [interval(seeds[i], length=seeds[i+1]) for i in range(0, len(seeds), 2)]
-print(invs2str(seed_ranges))
+logger.info(invs2str(seed_ranges))
 
 
 
@@ -289,7 +288,7 @@ for map_name, cmap in maps.items():
         source_ranges = new_source_ranges
     source_ranges += dest_ranges
     
-print(invs2str(source_ranges))
+logger.info(invs2str(source_ranges))
 
 print(min([i.start for i in source_ranges]))
             
