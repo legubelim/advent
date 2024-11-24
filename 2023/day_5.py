@@ -6,7 +6,7 @@ Created on Sat Nov 23 19:14:50 2024
 @author: legubelim
 """
 
-from typing import Optional
+from typing import Optional, List
 import re
 from collections import namedtuple
 
@@ -168,6 +168,130 @@ for seed in seeds:
 print(locations)
 print(min(locations))
    
+#%%
+
+## part 2
+
+seeds, maps = read_maps(get_lines(test=True))
+
+locations = []
+for i in range(0, len(seeds), 2):
+    #print(i)
+    seed_range_start, seed_range_end = seeds[i], seeds[i] + seeds[i+1] - 1
+    #print((seed_range_start, seed_range_end))
+    for seed in range(seed_range_start, seed_range_end+1):
+        source = seed
+        for map_name, cmap in maps.items():
+            #print(f"apply {map_name} to {source}")
+            source = apply_map(source, cmap)
+            #print(f"   --> {source}")
+        locations.append(source)
+        
+#print(locations)
+print(min(locations))
              
+#%%
+
+class interval:
+    def __init__(self, start, end=None, length=1):
+        self.start = start
+        if end is not None:
+            self.end = end
+            self.length = end - start + 1
+        else:
+            self.length = length
+            self.end = start + length - 1
+        
+    def __add__(self, o):
+        if (self.end < o.start - 1) or (o.end < self.start - 1):
+            return [self, o]
+        else:
+            return [interval(min(self.start, o.start), end=max(self.end, o.end))]
     
+    def __sub__(self, o):
+        if (self.end < o.start - 1) or (o.end < self.start-1):
+            return [self]
+        elif (o.start <= self.start) and (o.end >= self.start):
+            return []
+        elif o.start <= self.start:
+            return [interval(o.end + 1, end=self.end)]
+        elif o.end >= self.end:
+            return [interval(self.start, end=o.start-1)]
+        else:
+            return [interval(self.start, end=o.start-1), interval(o.end + 1, end=self.end)]
+        
+    def __and__(self, o):
+        if (self.end < o.start - 1) or (o.end < self.start-1):
+            return None
+        else:
+            return interval(max(self.start, o.start), end=min(self.end, o.end))
+        
+    def translate(self, shift):
+        return interval(self.start + shift, end=self.end + shift)
+        
+    def __str__(self):
+        return f"[{self.start}..{self.end}]"
     
+def invs2str(array):
+    return "[" + ", ".join([f"{i}" for i in array]) +  "]"
+    
+   
+a = interval(3, end=9)
+b = interval(10, end=15)
+c = interval(17, end=23)
+d = interval(5, end=7)
+e = interval(12, length=1)
+f = interval(6, end=13)
+print(f"a: {a}")
+print(f"b: {b}")
+print(f"c: {c}")
+print(f"d: {d}")
+print(f"e: {e}")
+print(f"f: {f}")
+
+print(f"a+b: {invs2str(a+b)}")
+print(f"b+c: {invs2str(b+c)}")
+print(f"a-d: {invs2str(a-d)}")
+
+print(f"a-f: {invs2str(a-f)}")
+print(f"a&f: {a&f}")
+
+    
+#%%
+
+#seed_ranges = [(seeds[i], seeds[i] + seeds[i+1] - 1) for i in range(0, len(seeds), 2)]
+#print(seed_ranges)
+seeds, maps = read_maps(get_lines(test=False))
+
+seed_ranges = [interval(seeds[i], length=seeds[i+1]) for i in range(0, len(seeds), 2)]
+print(invs2str(seed_ranges))
+
+
+
+#%%
+
+source_ranges = seed_ranges
+for map_name, cmap in maps.items():
+    dest_ranges = []
+    for map_line in cmap:
+        map_source_range = interval(map_line.source_range_start, length=map_line.range_length)        
+        map_dest_range   = interval(map_line.destination_range_start, length=map_line.range_length)
+        shift = map_line.destination_range_start - map_line.source_range_start
+        
+        new_source_ranges = []
+        for source_range in source_ranges:
+            mapped_source_range = source_range & map_source_range
+            if mapped_source_range is not None:
+                dest_ranges.append(mapped_source_range.translate(shift))
+                new_source_ranges += source_range-mapped_source_range
+            else:
+                new_source_ranges.append(source_range)
+        source_ranges = new_source_ranges
+    source_ranges += dest_ranges
+    
+print(invs2str(source_ranges))
+
+print(min([i.start for i in source_ranges]))
+            
+    
+   
