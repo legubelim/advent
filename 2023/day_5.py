@@ -7,15 +7,15 @@ Created on Sat Nov 23 19:14:50 2024
 """
 
 import re
-import unittest
 
 #%%
 
-logs = True
+import logging
 
-def log(s):
-    if logs:
-        print(s)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.DEBUG)
     
 
 #%%
@@ -63,8 +63,9 @@ humidity-to-location map:
     else:
         # getting lines from input file
         with open('day_5.input', 'r') as file:
-            lines = [l.strip() for l in file.readlines()]
+            lines = file.readlines()
         
-    return lines
+    return [l.strip() for l in lines]
 
-print(get_lines(test=True))
+logger.debug(get_lines(test=True))
+
