@@ -3,6 +3,7 @@
 
 
 ##
+#%%
 import re
 import logging
 from enum import IntEnum
@@ -10,11 +11,10 @@ from enum import IntEnum
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-logger.setLevel(logging.DEBUG)
-
+logger.setLevel(logging.INFO)
 
 ##
-
+#%%
 
 def get_lines(test=False):
     """ reads lines from string or input file and returns an array """
@@ -30,7 +30,7 @@ QQQJA 483"""
 
     else:
         # getting lines from input file
-        with open('day_7.input', 'r') as file:
+        with open('2023/day_7.input', 'r') as file:
             lines = file.readlines()
 
     return [l.strip() for l in lines]
@@ -39,6 +39,7 @@ QQQJA 483"""
 logger.debug(get_lines(test=True))
 
 ##
+#%%
 
 strengths = { 'A':14, 'K':13, 'Q':12, 'J':11, 'T':10, '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '3':3, '2': 2}
 
@@ -75,13 +76,14 @@ def get_type(hand_dict):
         return Type.ONE_PAIR
     return Type.HIGH_CARD
 
-def hand_score(hand_type, hand_str):
+def hand_score(hand_type, hand_str, strengths=strengths):
     score = hand_type.value
     for c in hand_str:
         score = score * 100 + strengths[c]
     return score
 
 ##
+#%%
 
 sep_pattern = "\s+"
 sep_prog = re.compile(sep_pattern)
@@ -89,7 +91,7 @@ sep_prog = re.compile(sep_pattern)
 def read_lines(lines):
     hands = []
     for line in lines:
-        #logger.debug(f"line: {line}")
+        logger.debug(f"line: {line}")
         hand_str, bid_str = sep_prog.split(line)
         hand_dict = {}
         for c in hand_str:
@@ -103,26 +105,66 @@ def read_lines(lines):
                 "score": score
                 }
         hands.append(hand)
-        #logger.debug(hand)
+        logger.debug(hand)
 
     return hands
 
 logger.debug(read_lines(get_lines(test=True)))
 
 ##
+#%%
 
-hands = read_lines(get_lines(test=False))
 
 ##
+#%%
 
-result = 0
+def compute_result(sorted_hands):
+    result = 0
+    for idx, hand in enumerate(sorted_hands):
+        rank = idx + 1
+        hand['rank'] = rank
+        result += rank * hand['bid']
+        logger.debug(hand)
+    return result
+
+##
+#%
+
+# Part 1
+hands = read_lines(get_lines(test=False))
 hands.sort(reverse=False, key=lambda i: i['score'])
-for idx, hand in enumerate(hands):
-    rank = idx + 1
-    hand['rank'] = rank
-    result += rank * hand['bid']
-    logger.debug(hand)
 
-print(result)
+print(compute_result(hands))
+
+##
+#%%
+
+# Part 2
+
+strengths_2 = { 'A':14, 'K':13, 'Q':12, 'J':1, 'T':10, '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '3':3, '2': 2}
+
+def enrich_hands(hands):
+    for hand in  hands:
+        logger.debug(hand)
+        hand_dict_2 = {k:v for k,v in hand['dict'].items() if k != 'J'}
+        if len(hand_dict_2) == 0:
+            # in case of "JJJJJ"
+            hand_dict_2['A'] = 5
+        else:
+            best_card = max([ (v, k) for k,v in hand_dict_2.items()])[1]
+            hand_dict_2[best_card] += hand['dict'].get('J', 0)
+        type_2 = get_type(hand_dict_2)
+        score_2 = hand_score(type_2, hand['str'], strengths=strengths_2)
+        hand['dict_2'] = hand_dict_2
+        hand['type_2'] = type_2
+        hand['score_2'] = score_2
+        logger.debug(f"{hand['dict']} , {hand_dict_2}")
 
 
+##
+#%%
+hands = read_lines(get_lines(test=False))
+enrich_hands(hands)
+hands.sort(reverse=False, key=lambda i: i['score_2'])
+
+print(compute_result(hands))
