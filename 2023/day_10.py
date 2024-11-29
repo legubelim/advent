@@ -4,9 +4,9 @@
 
 ##
 #%%
-import re
 import logging
-import math
+from collections import deque
+from collections.abc import Iterable
 
 logging.basicConfig(level=logging.DEBUG, format="{message}", style="{")
 logger = logging.getLogger(__name__)
@@ -199,7 +199,7 @@ def get_positions(lines: [str]) -> [Coord]:
     return positions
 #%%
 
-def print_loop(lines: [str], positions: [Coord], only_loop = True):
+def print_loop(lines: [str], positions: Iterable[Coord], only_loop = True):
     #matrix = []
     for y, line in enumerate(lines):
         row = []
@@ -230,7 +230,7 @@ print(int(len(positions)/2))
 
 #%%
 
-print_loop(lines, positions, only_loop=False)
+print_loop(lines, positions, only_loop=True)
 
 #%%
 
@@ -307,6 +307,26 @@ for idx, pos in enumerate(positions[:-1]):
             right_positions_set.add(right_pos)
 
 
-print_loop(lines, list(right_positions_set), only_loop=True)
+print_loop(lines, right_positions_set, only_loop=True)
 
+#%%
+
+enclosed_positions = right_positions_set.copy()
+
+pos_to_extend = deque(enclosed_positions)
+
+while pos_to_extend:
+    pos = pos_to_extend.popleft()
+    for direction in ['N', 'S', 'E', 'W']:
+        delta = direction_to_delta(direction)
+        close_pos = pos + delta
+    if ((close_pos not in enclosed_positions)
+            and (close_pos not in positions_set)
+            and close_pos.check_dimensions(max_x, max_y) ):
+        pos_to_extend.append(close_pos)
+        enclosed_positions.add(close_pos)
+
+print_loop(lines, enclosed_positions, only_loop=True)
+
+print(len(enclosed_positions))
 
