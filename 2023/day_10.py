@@ -73,7 +73,7 @@ L7JLJL-JLJLJL--JLJ.L"""
 
     else:
         # getting lines from input file
-        with open('2023/day_10.input', 'r') as file:
+        with open('day_10.input', 'r') as file:
             lines:[str] = file.readlines()
 
     return [l.strip() for l in lines]
@@ -235,16 +235,7 @@ print_loop(lines, positions, only_loop=True)
 #%%
 
 # part 2
-lines = get_lines(test=False, testnb=2)
-positions = get_positions(lines)
-del positions[-1]
 
-max_x, max_y = len(lines[0])-1, len(lines)-1
-print((max_x, max_y))
-
-
-
-#%%
 def get_right_deltas(pipe_type: str, direction: str) -> [Coord]:
     if pipe_type == '|':
         if direction == 'N': return [Coord(1,0)]
@@ -285,6 +276,16 @@ def guess_pipe_type(direction1: str, direction2: str) -> str:
     raise ValueError(f"invalid direction pair {direction1}, {direction2}")
 
 
+#%%
+
+lines = get_lines(test=False, testnb=2)
+positions = get_positions(lines)
+del positions[-1]
+
+max_x, max_y = len(lines[0])-1, len(lines)-1
+print((max_x, max_y))
+
+#%%
 
 initial_pipe_type = guess_pipe_type(delta_to_direction(positions[1] - positions[0]),
                                delta_to_direction(positions[0] - positions[-1]))
