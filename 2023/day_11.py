@@ -5,7 +5,6 @@
 ##
 #%%
 import logging
-from collections import deque
 from collections.abc import Iterable
 
 logging.basicConfig(level=logging.DEBUG, format="{message}", style="{")
