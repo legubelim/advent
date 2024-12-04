@@ -5,8 +5,10 @@
 ##
 #%%
 import logging
+from collections import namedtuple
 from collections.abc import Iterable
 from typing import Optional
+import re
 
 logging.basicConfig(level=logging.DEBUG, format="{message}", style="{")
 logger = logging.getLogger(__name__)
@@ -57,6 +59,8 @@ print(hash_option("HASH"))
 
 #%%
 
+# part 1
+
 def hash_line(options: [str]) -> int:
     res = 0
     for s in options:
@@ -69,5 +73,65 @@ print(hash_line(read_line(get_lines(test=False, testnb=1))))
 
 #%%
 
+# part 2
 
+class Lens:
+    def __init__(self, label, focal):
+        self.label = label
+        self.focal = focal
+
+    def __str__(self):
+        return f"Lens(label: {self.label}, focal: {self.focal})"
+
+    def __repr__(self):
+        return f"{self.label} {self.focal}"
+
+
+prog = re.compile(r"([^\-=]+)([\-=])(\d)*")
+
+#%%
+
+logger.setLevel(logging.INFO)
+options = read_line(get_lines(test=False, testnb=1))
+
+boxes = {}
+
+for option in options:
+    m = prog.match(option)
+    #logger.debug(m.groups())
+    label, operation, focal = m.groups()
+    if focal is not None:
+        focal = int(focal)
+    boxnb = hash_option(label)
+    box = boxes.setdefault(boxnb, [])
+
+    logger.debug(f"label: {label}, operation: {operation}, focal: {focal}, boxnb: {boxnb}")
+    logger.debug(f"box before: {box}")
+
+    if operation == '-':
+        box = [lens for lens in box if lens.label != label]
+        boxes[boxnb] = box
+    elif operation == '=':
+        present = False
+        for lens in box:
+            if lens.label == label:
+                present = True
+                lens.focal = focal
+        if not present:
+            box.append(Lens(label, focal))
+    logger.debug(f"box after: {box}")
+
+logger.info(boxes)
+
+#%%
+
+result = 0
+for box_id, box in boxes.items():
+    box_result = 0
+    for lens_id, lens in enumerate(box):
+        box_result += (box_id + 1) * (lens_id + 1) * lens.focal
+        logger.debug(f"{lens.label}: {box_id + 1} (box {box_id}) * {lens_id + 1} ({lens_id + 1}th slot) * {lens.focal} (focal length) = {(box_id + 1) * (lens_id + 1) * lens.focal}")
+    result += box_result
+
+print(result)
 
