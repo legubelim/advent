@@ -34,7 +34,7 @@ O.#..O.#.#
 
         else:
             raise ValueError("Wrong testnb!")
-        lines:[str] = [l.strip() for l in string.splitlines()]
+        lines:[str] = string.splitlines()
 
     else:
         # getting lines from input file
