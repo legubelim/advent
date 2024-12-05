@@ -8,6 +8,7 @@ import logging
 from collections import deque
 from collections.abc import Iterable
 from typing import Optional
+import heapq
 
 logging.basicConfig(level=logging.DEBUG, format="{message}", style="{")
 logger = logging.getLogger(__name__)
@@ -147,26 +148,83 @@ class Beam:
 
 #%%
 
-lines = get_lines(test=True, testnb=1)
+def print_energized(lines: [str], beam_set: set[Beam]):
 
-beams = deque([Beam()])
-beam_set = set()
+    energized = lines.copy()
+    for beam in beam_set:
+        energized[beam.pos.y] = energized[beam.pos.y][:beam.pos.x] + '#' + energized[beam.pos.y][beam.pos.x+1:]
 
-while beams:
-    beam = beams.popleft()
-    logger.debug(f"Beam in: {beam}")
-    for beam_out in beam.next(lines):
-        logger.debug(f"  Beam out: {beam_out}")
-        if beam_out not in beam_set:
-            logger.debug("    -> is a new beam")
-            beams.append(beam_out)
-            beam_set.add(beam)
-        else:
-            logger.debug("    -> is already known")
+    for line in lines:
+        print(" " + line)
 
-print(beam_set)
-print(len(beam_set))
-print(len(set([b.pos for b in beam_set])))
+    print("")
+
+    for line in energized:
+        print(" " + line)
+def energize(initial_beam: Beam, lines: [str], show=False) -> int:
+
+    beams = deque([initial_beam])
+    beam_set = set()
+
+    while beams:
+        beam = beams.popleft()
+        logger.debug(f"Beam in: {beam}")
+        beam_set.add(beam)
+        for beam_out in beam.next(lines):
+            logger.debug(f"  Beam out: {beam_out}")
+            if beam_out not in beam_set:
+                logger.debug("    -> is a new beam")
+                beams.append(beam_out)
+            else:
+                logger.debug("    -> is already known")
+
+    logger.debug(beam_set)
+
+    if show:
+        print_energized(lines, beam_set)
+
+    return len(set([b.pos for b in beam_set]))
+
+#%%
+
+# part 1
+
+logger.setLevel(logging.INFO)
+lines = get_lines(test=False, testnb=1)
+
+initial_beam = Beam()
+print(f"--> energized: {energize(initial_beam, lines, True)}")
+
+#%%
+
+# part 2
+
+logger.setLevel(logging.INFO)
+lines = get_lines(test=False, testnb=1)
+
+max_energy = 0
+
+for y in range(0, len(lines)):
+    initial_beam = Beam(Coord(0, y), 'E')
+    energy = energize(initial_beam, lines)
+    if energy > max_energy:
+        max_energy = energy
+    initial_beam = Beam(Coord(len(lines[0]) -1, y), 'W')
+    energy = energize(initial_beam, lines)
+    if energy > max_energy:
+        max_energy = energy
+
+for x in range(0, len(lines[0])):
+    initial_beam = Beam(Coord(x, 0), 'S')
+    energy = energize(initial_beam, lines)
+    if energy > max_energy:
+        max_energy = energy
+    initial_beam = Beam(Coord(x, len(lines) -1), 'N')
+    energy = energize(initial_beam, lines)
+    if energy > max_energy:
+        max_energy = energy
+
+print(f"--> max energized: {max_energy}")
 
 
 
