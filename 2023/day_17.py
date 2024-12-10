@@ -154,6 +154,8 @@ while queue:
 
     if current.pos == destination.pos:
         break
+    if visited[current.key()].len < current.len:
+        continue
     for neighbor in current.get_neighbors():
         key = neighbor.key()
         if (key not in visited) or (neighbor.len < visited[key].len):
@@ -163,7 +165,7 @@ while queue:
     steps += 1
 
 
-print(f"path length: {current.len}")
+print(f"path length: {current.len} found in {steps} steps")
 
 #%%
 
@@ -198,6 +200,8 @@ while queue:
 
     if (current.pos == destination.pos) and (current.dir_in_in_a_row >= 4):
         break
+    if visited[current.key()].len < current.len:
+        continue
     for neighbor in current.get_neighbors2():
         key = neighbor.key()
         if (key not in visited) or (neighbor.len < visited[key].len):
@@ -207,5 +211,6 @@ while queue:
     steps += 1
 
 
-print(f"path length: {current.len}")
+print(f"path length: {current.len} found in {steps} steps")
+
 
