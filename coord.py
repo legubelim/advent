@@ -48,7 +48,8 @@ class Coord:
 
     def check_dimensions(self) -> bool:
         if self.matrix is None:
-            raise ValueError("Matrix not set!")
+            #raise ValueError("Matrix not set!")
+            return True
         return (self.x >= 0) and (self.x < self.dim_x) and (self.y >= 0) and (self.y < self.dim_y)
 
     def get_neighbors(self) -> ['Coord']:
