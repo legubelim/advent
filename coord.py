@@ -32,6 +32,9 @@ class Coord:
     def __ne__(self, other: 'Coord') -> bool:
         return not self.__eq__(other)
 
+    def __mul__(self, other: int):
+        return Coord(self.x * other, self.y * other)
+
     def get_value(self) -> str:
         if self.matrix is None:
             raise ValueError("Matrix not set!")
@@ -75,6 +78,10 @@ def direction_to_delta(direction: str) -> Coord:
     if direction == 'S': return Coord(0, 1)
     if direction == 'E': return Coord(1, 0)
     if direction == 'W': return Coord(-1, 0)
+    if direction in ['NE', 'EN']: return Coord(1, -1)
+    if direction in ['NW', 'WN']: return Coord(-1, -1)
+    if direction in ['SE', 'ES']: return Coord(1, 1)
+    if direction in ['SW', 'WS']: return Coord(-1, 1)
     raise ValueError(f"Unknown direction {direction}!")
 
 def delta_to_direction(delta: Coord) -> str:
@@ -82,6 +89,10 @@ def delta_to_direction(delta: Coord) -> str:
     if delta == Coord(0, 1): return 'S'
     if delta == Coord(1, 0): return 'E'
     if delta == Coord(-1, 0): return 'W'
+    if delta == Coord(1, -1): return 'NE'
+    if delta == Coord(-1, -1): return 'NW'
+    if delta == Coord(1, 1): return 'SE'
+    if delta == Coord(-1, 1): return 'SW'
     raise ValueError(f"Invalid delta: {delta}")
 
 # TODO direction to enum
