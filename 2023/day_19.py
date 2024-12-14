@@ -3,10 +3,10 @@
 
 
 ##
-# %%
+#%%
 import logging
 import re
-import itertools
+from typing import Optional
 
 logging.basicConfig(level=logging.DEBUG, format="{message}", style="{")
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logger.setLevel(logging.DEBUG)
 
 
 ##
-# %%
+#%%
 
 def get_lines(test: bool = False, testnb: int = 1) -> [str]:
     """ reads lines from string or input file and returns an array """
@@ -129,6 +129,8 @@ def read_lines(lines):
 
 #%%
 
+# part 1
+
 def apply_workflow(workflow, part):
     for rule in workflow:
         next_workflow_name = rule.apply_to_part(part)
@@ -158,51 +160,95 @@ print(f"sum of ratings: {result}")
 
 #%%
 
-ratings = {}
-for w, rules in workflows.items():
-    for r in rules:
-        if r.rating is not None:
-            rating = ratings.setdefault(r.rating, set())
-            rating.add(r.value if r.op == '<' else r.value + 1)
+# part 2
 
-for rating, values in ratings.items():
-    values.add(1)
+class Combi:
+    rating_keys = ['a', 'm', 's', 'x']
 
-print(ratings)
+    def __init__(self,):
+        self.ranges = {}
+        for key in self.rating_keys:
+            self.ranges[key] = {}
+            self.ranges[key]['min'] = 1
+            self.ranges[key]['max'] = 4000
 
-nbcombi = 1
-for rating, values in ratings.items():
-    nbcombi *= len(values)
+    def nbcombis(self):
+        n = 1
+        for key in self.rating_keys:
+            n *= self.ranges[key]['max'] - self.ranges[key]['min'] + 1
+        return n
 
-print(f"nbcombi: {nbcombi}")
+    def copy(self):
+        cp = Combi()
+        for key in self.rating_keys:
+            cp.ranges[key]['min'] = self.ranges[key]['min']
+            cp.ranges[key]['max'] = self.ranges[key]['max']
+        return cp
+
+    def __str__(self):
+        return "(" + ",".join([f"{k}:[{r['min'], r['max']}]" for k, r in self.ranges.items()]) + ")"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def split(self, rating, value):
+        if self.ranges[rating]['min'] < value <= self.ranges[rating]['max']:
+            combi1 = self.copy()
+            combi1.ranges[rating]['max'] = value - 1
+            combi2 = self.copy()
+            combi2.ranges[rating]['min'] = value
+            #logger.debug(f"splitting {self} on {rating}:{value} --> {combi1} | {combi2}")
+            return (combi1, combi2)
+        else:
+            raise ValueError(f"cannot split {self} on {rating}:{value}")
+
+    def apply_rule(self, rule:Rule) -> [['Combi', bool, Optional[str]]]:
+        if rule.op is None:
+            if rule.next_workflow_name == 'R':
+                return []
+            else:
+                return [(self, True, rule.next_workflow_name)]
+        elif rule.op == "<":
+            if self.ranges[rule.rating]['max'] < rule.value:
+                return [(self, True, rule.next_workflow_name)]
+            elif self.ranges[rule.rating]['min'] >= rule.value:
+                return [(self, False, None)]
+            else:
+                combi1, combi2 = self.split(rule.rating, rule.value)
+                return [(combi1, True, rule.next_workflow_name), (combi2, False, None)]
+        elif rule.op == ">":
+            if self.ranges[rule.rating]['max'] <= rule.value:
+                return [(self, False, None)]
+            elif self.ranges[rule.rating]['min'] > rule.value:
+                return [(self, True, rule.next_workflow_name)]
+            else:
+                combi1, combi2 = self.split(rule.rating, rule.value + 1)
+                return [(combi1, False, None), (combi2, True, rule.next_workflow_name)]
+        else:
+            raise ValueError(f"Unknown operator {rule.op}")
 
 #%%
 
-sratings = {}
-for key, values in ratings.items():
-    svalues = sorted(values)
-    sratings[key] = []
-    for i, v in enumerate(svalues):
-        sratings[key].append((key, v, (svalues[i+1] if i+1 < len(svalues) else 4001) - v ))
+def apply_workflow(combi: Combi, workflow_name, workflows, accepted):
+    if workflow_name == 'A':
+        accepted.append(combi)
+        return
+    if workflow_name == 'R':
+        return
+    workflow = workflows[workflow_name]
 
-print(sratings)
+    for rule in workflow:
+        for item in combi.apply_rule(rule):
+            if item[1]:
+                apply_workflow(item[0], item[2], workflows, accepted)
+            else:
+                combi = item[0]
 
-#%%
+accepted = []
+apply_workflow(Combi(), 'in', workflows, accepted)
 
-logger.setLevel(logging.INFO)
-steps = 0
 result = 0
-for elements in itertools.product(*sratings.values()):
-    if steps % 1000000 == 0:
-        logger.info(f"step: {steps} (steps: {100*steps/nbcombi:.2%}%)")
-    steps += 1
-    part = {}
-    part_combis = 1
-    for key, value, combis in elements:
-        part_combis *= combis
-        part[key] = value
-    if apply_workflows(workflows, part):
-        result += part_combis
+for a in accepted:
+    result += a.nbcombis()
 
-print(f"sum of ratings: {result}")
-
+print(result)
